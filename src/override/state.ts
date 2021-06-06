@@ -1,11 +1,8 @@
 import localRef from "@/localstorage";
-import { getTree } from "@/browser/bookmarks";
+import { getTree, BookmarkTreeNode, filterChildren } from "@/browser/bookmarks";
 import { getAncestors, findNode, flatten } from "@/fn-utils";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { Window, get as getWindow } from "@/browser/windows";
-import { filterChildren } from "@/utils";
-
-type BookmarkTreeNode = browser.bookmarks.BookmarkTreeNode;
 
 export function useBookmarks(): void {
   const events = [

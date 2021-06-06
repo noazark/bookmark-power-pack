@@ -27,12 +27,16 @@
 
 <script lang="ts">
 import { Component, computed, defineComponent, PropType } from "vue";
-import { inferType, filterChildren } from "@/utils";
-import { BookmarkTreeNode, BookmarkTreeNodeType } from "@/browser/bookmarks";
-import IconOpen from "@/override/components/IconOpen.vue";
-import IconDirectory from "@/override/components/IconDirectory.vue";
-import IconLink from "@/override/components/IconLink.vue";
-import BookmarkLink from "@/override/components/BookmarkLink.vue";
+import {
+  BookmarkTreeNode,
+  BookmarkTreeNodeType,
+  inferType,
+  filterChildren,
+} from "@/browser/bookmarks";
+import IconOpen from "@/components/IconOpen.vue";
+import IconDirectory from "@/components/IconDirectory.vue";
+import IconLink from "@/components/IconLink.vue";
+import BookmarkLink from "@/components/BookmarkLink.vue";
 
 export default defineComponent({
   props: {

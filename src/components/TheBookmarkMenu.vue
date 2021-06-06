@@ -28,11 +28,16 @@
 
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { breadcrumbs, selectPage, pinBookmark, isPinned } from "../state";
-import BookmarkLink from "@/override/components/BookmarkLink.vue";
-import Breadcrumbs from "@/override/components/Breadcrumbs.vue";
-import IconPin from "@/override/components/IconPin.vue";
-import IconX from "@/override/components/IconX.vue";
+import {
+  breadcrumbs,
+  selectPage,
+  pinBookmark,
+  isPinned,
+} from "@/override/state";
+import BookmarkLink from "@/components/BookmarkLink.vue";
+import Breadcrumbs from "@/components/Breadcrumbs.vue";
+import IconPin from "@/components/IconPin.vue";
+import IconX from "@/components/IconX.vue";
 
 export default defineComponent({
   components: {

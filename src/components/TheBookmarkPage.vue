@@ -32,13 +32,13 @@
 
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { hasLinks, filterChildren } from "@/utils";
+import { hasLinks, filterChildren } from "@/browser/bookmarks";
 import {
   selectedPage,
   openWindow as handleOpenAll,
   selectPage,
 } from "@/override/state";
-import Folder from "@/override/components/Folder.vue";
+import Folder from "@/components/Folder.vue";
 
 export default defineComponent({
   components: {

@@ -5,12 +5,21 @@
   "description": "Access your bookmarks like you've never been able to before.",
   "default_locale": "en",
   "permissions": [
-    "bookmarks"
+    "bookmarks",
+    "tabs"
   ],
   "icons": {
     "16": "icons/16.png",
     "48": "icons/48.png",
     "128": "icons/128.png"
+  },
+  "sidebar_action": {
+    "default_panel": "sidebar.html",
+    "default_title": "__MSG_extName__",
+    "default_icon": {
+      "19": "icons/19.png",
+      "38": "icons/38.png"
+    }
   },
   "chrome_url_overrides": {
     "newtab": "override.html"

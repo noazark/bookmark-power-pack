@@ -7,8 +7,7 @@
 </template>
 
 <script lang="ts">
-import { is } from "@/utils";
-import { BookmarkTreeNode } from "@/browser/bookmarks";
+import { BookmarkTreeNode, is } from "@/browser/bookmarks";
 import { computed, defineComponent, PropType } from "vue";
 
 export default defineComponent({
