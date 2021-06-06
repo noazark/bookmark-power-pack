@@ -5,7 +5,11 @@
 
       <ul>
         <li v-for="tab in tabs" :key="tab.index">
-          <tab-link :tab="tab" @select="selectTab" @close="closeTab"></tab-link>
+          <tab-link
+            v-bind="tab"
+            @select="selectTab"
+            @close="closeTab"
+          ></tab-link>
         </li>
       </ul>
     </div>

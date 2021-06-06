@@ -4,34 +4,47 @@
     @click.stop.prevent="handleSelect"
     :title="preview"
   >
-    <slot>
+    <div class="tab-action">
       <div class="close" @click.stop.prevent="handleClose">
         <icon-x></icon-x>
       </div>
-      <img
-        class="favicon"
-        :src="tab.favIconUrl"
-        height="16"
-        width="16"
-        v-if="tab.favIconUrl"
-      />
-      <div class="title">
-        {{ tab.title }}
-      </div>
-    </slot>
+      <img class="favicon" :src="favIconUrl" v-if="favIconUrl" />
+    </div>
+    <div class="title">
+      {{ title }}
+    </div>
   </a>
 </template>
 
 <script lang="ts">
-import { Tab } from "@/browser/tabs";
-import { computed, defineComponent, PropType } from "vue";
+import { computed, defineComponent } from "vue";
 import IconX from "@/components/IconX.vue";
 
 export default defineComponent({
   props: {
-    tab: {
-      required: true,
-      type: Object as PropType<Tab>,
+    title: {
+      type: String,
+    },
+    url: {
+      type: String,
+    },
+    favIconUrl: {
+      type: String,
+    },
+    id: {
+      type: Number,
+    },
+    attention: {
+      type: Boolean,
+    },
+    active: {
+      type: Boolean,
+    },
+    pinned: {
+      type: Boolean,
+    },
+    discarded: {
+      type: Boolean,
     },
   },
 
@@ -42,15 +55,15 @@ export default defineComponent({
   emits: ["select", "close"],
 
   setup(props, { emit }) {
-    const handleSelect = () => emit("select", props.tab.id);
-    const handleClose = () => emit("close", props.tab.id);
+    const handleSelect = () => emit("select", props.id);
+    const handleClose = () => emit("close", props.id);
 
     const preview = computed(() => {
-      return `${props.tab.title} - ${props.tab.url}`;
+      return `${props.title} - ${props.url}`;
     });
 
     const styleAttrs = computed(() => {
-      const { attention, active, pinned, discarded } = props.tab;
+      const { attention, active, pinned, discarded } = props;
       return {
         attention,
         active,
@@ -69,34 +82,36 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .tab-link {
-  padding: 0 6px;
-  margin-left: -8px;
-  border-left: 2px solid transparent;
+  padding: 0 8px;
+  margin-left: -6px;
 
   box-sizing: border-box;
-
-  &.pinned {
-    border-left: 2px solid rgba(var(--font-color-rgb), 0.2);
-  }
-
-  &.discarded {
-    border-left: 2px solid rgb(7, 190, 245);
-    opacity: 0.2;
-  }
-
-  &.active {
-    border-left: 2px solid rgb(255, 187, 0);
-  }
+  position: relative;
 }
 
-.tab-link .close {
-  visibility: hidden;
+.tab-link::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  content: "";
+
+  border-left: 2px solid transparent;
 }
 
-.tab-link .favicon {
-  margin-right: 12px;
+.tab-link.pinned::before {
+  border-left: 2px solid rgba(var(--font-color-rgb), 0.2);
+}
+
+.tab-link.discarded::before {
+  border-left: 2px solid rgb(7, 190, 245);
+  opacity: 0.2;
+}
+
+.tab-link.active::before {
+  border-left: 2px solid rgb(255, 187, 0);
 }
 
 .tab-link .title {
@@ -114,9 +129,26 @@ export default defineComponent({
 
 .tab-link:hover {
   text-decoration: underline dotted;
+}
 
-  .close {
-    visibility: initial;
-  }
+.tab-action,
+.tab-action .favicon {
+  width: 16px;
+  height: 16px;
+}
+
+.tab-action {
+  margin-right: 12px;
+}
+
+.tab-link .close {
+  display: none;
+}
+.tab-link:hover .close {
+  display: block;
+}
+
+.tab-link:hover .favicon {
+  display: none;
 }
 </style>

@@ -2,24 +2,50 @@ import { Tab } from "@/browser/tabs";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
 export function useTabs(): void {
+  // all this event handling is funky. Each event has it's own handler with a certain mutation.
   const events = [
-    browser.tabs.onRemoved,
-    browser.tabs.onUpdated,
-    browser.tabs.onDetached,
+    { evt: browser.tabs.onActivated, handler: handleActivated },
+    { evt: browser.tabs.onCreated, handler: handleCreate },
+    { evt: browser.tabs.onRemoved, handler: handleRemove },
+    { evt: browser.tabs.onUpdated, handler: handleUpdate },
   ];
 
-  function handleReload() {
-    loadTabs();
+  async function handleRemove(tabId: number) {
+    const idx = tabs.value.findIndex((tab) =>
+      tab == null ? true : tab.id === tabId
+    );
+    tabs.value.splice(idx, 1);
+  }
+
+  function handleActivated(activeInfo: Record<string, unknown>) {
+    const idx = tabs.value.findIndex((tab) => tab.id === activeInfo.tabId);
+    const prevIdx = tabs.value.findIndex(
+      (tab) => tab.id === activeInfo.previousTabId
+    );
+    tabs.value[idx].active = true;
+    tabs.value[prevIdx].active = false;
+  }
+
+  async function handleUpdate(
+    tabId: number,
+    changeInfo: Record<string, unknown>
+  ) {
+    const idx = tabs.value.findIndex((tab) => tab.id === tabId);
+    Object.assign(tabs.value[idx], changeInfo);
+  }
+
+  async function handleCreate(tab: Tab) {
+    tabs.value.push(tab);
   }
 
   onMounted(() => {
     loadTabs();
 
-    events.map((evt) => evt.addListener(handleReload));
+    events.map(({ evt, handler }) => evt.addListener(handler));
   });
 
   onUnmounted(() => {
-    events.map((evt) => evt.removeListener(handleReload));
+    events.map(({ evt, handler }) => evt.removeListener(handler));
   });
 
   onMounted(async () => {
@@ -47,7 +73,8 @@ function getGroup(tab: Tab) {
  * STATE
  */
 export const tabs = ref<Tab[]>([]);
-const groupedDomains = ["docs.google.com"];
+export const removed = ref(0);
+const groupedDomains = ["docs.google.com", "www.google.com"];
 
 /**
  * GETTERS
