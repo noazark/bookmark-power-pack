@@ -30,6 +30,14 @@ export function useTabs(): void {
     tabId: number,
     changeInfo: Record<string, unknown>
   ) {
+    // hack to prevent tabs from switching groups prematurely
+    if (
+      changeInfo.hasOwnProperty("url") &&
+      changeInfo["url"] == "about:blank"
+    ) {
+      delete changeInfo["url"];
+    }
+
     const idx = tabs.value.findIndex((tab) => tab.id === tabId);
     Object.assign(tabs.value[idx], changeInfo);
   }

@@ -105,9 +105,8 @@ export default defineComponent({
   border-left: 2px solid rgba(var(--font-color-rgb), 0.2);
 }
 
-.tab-link.discarded::before {
-  border-left: 2px solid rgb(7, 190, 245);
-  opacity: 0.2;
+.tab-link.discarded {
+  filter: grayscale(100%) opacity(30%);
 }
 
 .tab-link.active::before {
