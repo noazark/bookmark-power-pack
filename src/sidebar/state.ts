@@ -1,59 +1,92 @@
 import { Tab } from "@/browser/tabs";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
-export function useTabs(): void {
-  // all this event handling is funky. Each event has it's own handler with a certain mutation.
-  const events = [
-    { evt: browser.tabs.onActivated, handler: handleActivated },
-    { evt: browser.tabs.onCreated, handler: handleCreate },
-    { evt: browser.tabs.onRemoved, handler: handleRemove },
-    { evt: browser.tabs.onUpdated, handler: handleUpdate },
-  ];
-
-  async function handleRemove(tabId: number) {
-    const idx = tabs.value.findIndex((tab) =>
-      tab == null ? true : tab.id === tabId
-    );
-    tabs.value.splice(idx, 1);
+function handleRemove(
+  tabId: number,
+  removeInfo: {
+    windowId: number;
+    isWindowClosing: boolean;
+  }
+) {
+  // FIXME: some events are triggered across all windows. Filter those out.
+  //
+  // The problem is that tab indexes are unique per window and performing a
+  // mutation based on index alone will cause the wrong tab to be changed.
+  if (removeInfo.windowId !== currentWindowId.value) {
+    return;
   }
 
-  function handleActivated(activeInfo: Record<string, unknown>) {
-    const idx = tabs.value.findIndex((tab) => tab.id === activeInfo.tabId);
-    const prevIdx = tabs.value.findIndex(
-      (tab) => tab.id === activeInfo.previousTabId
-    );
-    tabs.value[idx].active = true;
-    tabs.value[prevIdx].active = false;
+  const idx = tabs.value.findIndex((tab) =>
+    tab == null ? true : tab.id === tabId
+  );
+  tabs.value.splice(idx, 1);
+}
+
+function handleActivated(activeInfo: Record<string, unknown>) {
+  const idx = tabs.value.findIndex((tab) => tab.id === activeInfo.tabId);
+  const prevIdx = tabs.value.findIndex(
+    (tab) => tab.id === activeInfo.previousTabId
+  );
+  tabs.value[idx].active = true;
+  tabs.value[prevIdx].active = false;
+}
+
+function handleUpdate(
+  tabId: number,
+  changeInfo: Record<string, unknown>,
+  tab: Tab
+) {
+  // FIXME: some events are triggered across all windows. Filter those out.
+  //
+  // The problem is that tab indexes are unique per window and performing a
+  // mutation based on index alone will cause the wrong tab to be changed.
+  if (tab.windowId !== currentWindowId.value) {
+    return;
   }
 
-  async function handleUpdate(
-    tabId: number,
-    changeInfo: Record<string, unknown>
+  // hack to prevent tabs from switching groups prematurely
+  if (
+    Object.prototype.hasOwnProperty.call(changeInfo, "url") &&
+    changeInfo["url"] == "about:blank"
   ) {
-    // hack to prevent tabs from switching groups prematurely
-    if (
-      changeInfo.hasOwnProperty("url") &&
-      changeInfo["url"] == "about:blank"
-    ) {
-      delete changeInfo["url"];
-    }
-
-    const idx = tabs.value.findIndex((tab) => tab.id === tabId);
-    Object.assign(tabs.value[idx], changeInfo);
+    delete changeInfo["url"];
   }
 
-  async function handleCreate(tab: Tab) {
-    tabs.value.push(tab);
+  const idx = tabs.value.findIndex((tab) => tab.id === tabId);
+  Object.assign(tabs.value[idx], changeInfo);
+}
+
+function handleCreate(tab: Tab) {
+  // FIXME: some events are triggered across all windows. Filter those out.
+  //
+  // The problem is that tab indexes are unique per window and performing a
+  // mutation based on index alone will cause the wrong tab to be changed.
+  if (tab.windowId !== currentWindowId.value) {
+    return;
   }
 
-  onMounted(() => {
+  tabs.value.push(tab);
+}
+
+export function useTabs(): void {
+  onMounted(async () => {
+    const { id } = await browser.windows.getCurrent();
+    currentWindowId.value = id;
+
     loadTabs();
 
-    events.map(({ evt, handler }) => evt.addListener(handler));
+    // Each event has it's on special handling needs :/
+    browser.tabs.onActivated.addListener(handleActivated);
+    browser.tabs.onCreated.addListener(handleCreate);
+    browser.tabs.onRemoved.addListener(handleRemove);
+    browser.tabs.onUpdated.addListener(handleUpdate);
   });
 
   onUnmounted(() => {
-    events.map(({ evt, handler }) => evt.removeListener(handler));
+    browser.tabs.onActivated.removeListener(handleActivated);
+    browser.tabs.onCreated.removeListener(handleCreate);
+    browser.tabs.onRemoved.removeListener(handleRemove);
+    browser.tabs.onUpdated.removeListener(handleUpdate);
   });
 
   onMounted(async () => {
@@ -81,12 +114,14 @@ function getGroup(tab: Tab) {
  * STATE
  */
 export const tabs = ref<Tab[]>([]);
-export const removed = ref(0);
+export const currentWindowId = ref();
 const groupedDomains = ["docs.google.com", "www.google.com"];
 
 /**
  * GETTERS
  */
+
+// FIXME: groupedTabs are not properly sorted.
 export const groupedTabs = computed(() => {
   const groups: Record<string, Tab[]> = {};
 
