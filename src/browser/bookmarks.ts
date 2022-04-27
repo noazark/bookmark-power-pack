@@ -1,7 +1,8 @@
-export const getTree = browser.bookmarks.getTree;
-
 export type BookmarkTreeNodeType = browser.bookmarks.BookmarkTreeNodeType;
 export type BookmarkTreeNode = browser.bookmarks.BookmarkTreeNode;
+
+export const getTree = (): Promise<BookmarkTreeNode[]> =>
+  browser.bookmarks.getTree();
 
 export function is(
   bookmark: BookmarkTreeNode,

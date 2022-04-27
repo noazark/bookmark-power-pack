@@ -1,5 +1,9 @@
-import { BookmarkTreeNode } from "@/browser/bookmarks";
-import { filterChildren, hasLinks, inferType } from "@/utils";
+import {
+  BookmarkTreeNode,
+  filterChildren,
+  hasLinks,
+  inferType,
+} from "@/browser/bookmarks";
 
 const defaultBookmark: BookmarkTreeNode = {
   id: "foo",
